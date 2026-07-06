@@ -46,12 +46,12 @@ public class MenuButtonManager : MonoBehaviour
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        SceneTransition.SwitchToScene(menuSceneName);
+        SceneManager.LoadScene(menuSceneName);
     }
 
     public void LoadGameScene()
     {
-        SceneTransition.SwitchToScene(gameSceneName);
+        SceneManager.LoadScene(gameSceneName);
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
