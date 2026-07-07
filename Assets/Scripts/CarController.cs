@@ -9,11 +9,6 @@ public class CarController : MonoBehaviour
     [SerializeField] private GameObject _lights;
     [SerializeField] private GameObject _lightsBackMove;
 
-    [SerializeField] private GameObject _driftSmoke;
-
-    // ���������� ��� ���������� 
-    public float currentSteeringAngle { get; private set; }
-    public float currentSlipAngle { get; private set; }
 
     private Rigidbody _rb;
     [SerializeField] private int _motorForce;
@@ -26,7 +21,6 @@ public class CarController : MonoBehaviour
     private float _verticalInput;
     private float _horizontalInput;
 
-    [SerializeField] public bool _isDrift = false;
     [SerializeField] public float _speed;
 
     [SerializeField] private AnimationCurve _sterlingCurve;
@@ -41,27 +35,55 @@ public class CarController : MonoBehaviour
     private void Start()
     {
         _rb = GetComponent<Rigidbody>();
-        _rb.centerOfMass = _centreOfMass.position;
+        _rb.centerOfMass = _centreOfMass != null ? _centreOfMass.localPosition : new Vector3(0, -0.5f, 0);
+        _rb.mass = 1500f;
+        _rb.linearDamping = 0.5f;
+        _rb.angularDamping = 0.5f;
+        _rb.interpolation = RigidbodyInterpolation.Interpolate;
+        _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
+        foreach (Wheel wheel in _wheels)
+        {
+            var c = wheel.WheelCollider;
+
+            // Подвеска
+            var spring = c.suspensionSpring;
+            spring.spring = 35000f;
+            spring.damper = 1500f;
+            spring.targetPosition = 0.5f;
+            c.suspensionSpring = spring;
+
+            // Радиус и масса
+            // c.radius = 0.5f;
+            // c.mass = 40f;
+
+            // Настройка трения (рекомендую эти значения как стартовые)
+            WheelFrictionCurve fwd = c.forwardFriction;
+            fwd.extremumSlip = 0.4f;
+            fwd.extremumValue = 1f;
+            fwd.asymptoteSlip = 0.8f;
+            fwd.asymptoteValue = 0.5f;
+            c.forwardFriction = fwd;
+
+            WheelFrictionCurve side = c.sidewaysFriction;
+            side.extremumSlip = 0.2f;
+            side.extremumValue = 1f;
+            side.asymptoteSlip = 0.5f;
+            side.asymptoteValue = 0.75f;
+            c.sidewaysFriction = side;
+        }
+
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-        initialSprings = new JointSpring[_wheels.Length];
-        initialForwardFrictions = new WheelFrictionCurve[_wheels.Length];
-        initialSidewaysFrictions = new WheelFrictionCurve[_wheels.Length];
-
-        for (int i = 0; i < _wheels.Length; i++)
-        {
-            initialSprings[i] = _wheels[i].WheelCollider.suspensionSpring;
-            initialForwardFrictions[i] = _wheels[i].WheelCollider.forwardFriction;
-            initialSidewaysFrictions[i] = _wheels[i].WheelCollider.sidewaysFriction;
-        }
     }
 
     private void Update()
     {
+        CheckInput();
         Move();
         Brake();
         Steerling();
-        CheckInput();
+        
     }
 
     private void FixedUpdate()
@@ -71,21 +93,11 @@ public class CarController : MonoBehaviour
             if (wheel.IsForwardWheels)
             {
                 float slipAngel = Vector3.Angle(transform.forward, _rb.linearVelocity - transform.forward);
-
-                if (_isDrift == false && ((_speed > 8f && slipAngel > 20) || (_speed > 5f && Input.GetKey(KeyCode.Space))))
-                {
-                    _isDrift = true;
-                    _driftSmoke.SetActive(true);
-                }
-                if (_isDrift == true && (_speed < 5f))
-                {
-                    _isDrift = false;
-                    _driftSmoke.SetActive(false);
-                }
             }
         }
 
     }
+
 
     private void Move()
     {
@@ -93,74 +105,36 @@ public class CarController : MonoBehaviour
 
         foreach (Wheel wheel in _wheels)
         {
-            if (!wheel.IsForwardWheels)
+            float motorTorque = 0f;
+            float currentMaxSpeed = _verticalInput > 0 ? _maxSpeedForvard : _maxSpeedRevers;
+
+            if (Mathf.Abs(_verticalInput) > 0.01f && _speed < currentMaxSpeed)
             {
-                float motorTorque = 0f;
-                float speedLimit = 0f;
-                float currentMaxSpeed = 0f;
-
-                if (_verticalInput > 0)
-                {
-                    currentMaxSpeed = _maxSpeedForvard;
-                    speedLimit = Mathf.Clamp01(1f - (_speed / currentMaxSpeed));
-                    motorTorque = _motorForce * _verticalInput * speedLimit;
-                }
-                else if (_verticalInput < 0)
-                {
-                    currentMaxSpeed = _maxSpeedRevers;
-                    speedLimit = Mathf.Clamp01(1f - (_speed / currentMaxSpeed));
-                    motorTorque = _motorForce * _verticalInput * speedLimit;
-                }
-                else
-                {
-                    if (_speed > 0.5f)
-                    {
-                        float brakeDirection = -Mathf.Sign(Vector3.Dot(_rb.linearVelocity, transform.forward));
-                        motorTorque = brakeDirection * _engineBrakeForce;
-
-                        float currentSpeed = _rb.linearVelocity.magnitude;
-                        Vector3 currentDirection = _rb.linearVelocity.normalized;
-                        Vector3 torqueDirection = transform.forward * motorTorque;
-
-                        if (Vector3.Dot(torqueDirection, currentDirection) > 0)
-                        {
-                            motorTorque = 0;
-                        }
-                    }
-                    else
-                    {
-                        _rb.linearVelocity = Vector3.zero;
-                        motorTorque = 0;
-                    }
-                }
-
-                if ((_verticalInput > 0 && _speed >= currentMaxSpeed) || (_verticalInput < 0 && _speed >= currentMaxSpeed))
-                {
+                float speedLimit = Mathf.Clamp01(1f - (_speed / currentMaxSpeed));
+                motorTorque = _motorForce * _verticalInput * speedLimit;
+            }
+            else if (_speed > 0.5f && Mathf.Abs(_verticalInput) < 0.01f)
+            {
+                // Двигательное торможение (engine brake)
+                motorTorque = -Mathf.Sign(Vector3.Dot(_rb.linearVelocity, transform.forward)) * _engineBrakeForce;
+                if (Vector3.Dot(transform.forward * motorTorque, _rb.linearVelocity.normalized) > 0)
                     motorTorque = 0;
-                }
-                wheel.WheelCollider.motorTorque = motorTorque;
             }
 
+            wheel.WheelCollider.motorTorque = motorTorque;
             wheel.UpdateMeshPosition();
         }
 
-        bool isReversingInput = _verticalInput < 0;
-
-        if (isReversingInput && IsMovingForward)
-        {
-            _lightsBackMove.gameObject.SetActive(false);
-            _lights.gameObject.SetActive(true);
-        }
-        else if (isReversingInput && !IsMovingForward)
-        {
-            _lights.gameObject.SetActive(false);
-            _lightsBackMove.gameObject.SetActive(true);
-        }
+        // Логика фар
+        if (_verticalInput < 0)
+            _lightsBackMove.SetActive(true);
         else
-        {
-            _lights.gameObject.SetActive(false);
-            _lightsBackMove.gameObject.SetActive(false);
-        }
+            _lightsBackMove.SetActive(false);
+
+        if (_verticalInput > 0)
+            _lights.SetActive(true);
+        else
+            _lights.SetActive(false);
     }
 
     public bool IsMovingForward
@@ -210,10 +184,7 @@ public class CarController : MonoBehaviour
             steeringAngle += Vector3.SignedAngle(transform.forward, _rb.linearVelocity, Vector3.up);
 
         steeringAngle = Mathf.Clamp(steeringAngle, -48, 48);
-        // ����������
-        currentSteeringAngle = steeringAngle;
-        currentSlipAngle = slipAngel;
-        //
+
         foreach (Wheel wheel in _wheels)
         {
             if (wheel.IsForwardWheels)
@@ -222,6 +193,7 @@ public class CarController : MonoBehaviour
             }
         }
     }
+
 }
 
 [System.Serializable]
