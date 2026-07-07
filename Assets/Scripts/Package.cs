@@ -12,7 +12,7 @@ public class Package : MonoBehaviour
 
     //private LineRenderer line;
     //public float barWidth = 1f;
-    public GameObject barQuadPrefab;
+    //public GameObject barQuadPrefab;
 
     private float health;
     private float maxHealth = 10f;
@@ -31,27 +31,27 @@ public class Package : MonoBehaviour
     {
         penalty = -((int) maxHealth / 10);
         health = maxHealth;
-        SetQuadBar();
+        //SetQuadBar();
         //Vector3 spawnPos = transform.position + Vector3.up * 1.5f;
         //textHp.objectToFollow = gameObject;
         //SetLine();
         //SpawnBar();
     }
 
-    void SetQuadBar()
-    {
-        if (barQuadPrefab == null)
-        {
-            Vector3 spPos = transform.position + Vector3.up * 1f;
-            GameObject barObj = Instantiate(barQuadPrefab, spPos, Quaternion.identity);
-            hpBar = barObj.GetComponent<QuadHP>();
+    //void SetQuadBar()
+    //{
+    //    if (barQuadPrefab == null)
+    //    {
+    //        Vector3 spPos = transform.position + Vector3.up * 1f;
+    //        GameObject barObj = Instantiate(barQuadPrefab, spPos, Quaternion.identity);
+    //        hpBar = barObj.GetComponent<QuadHP>();
 
-            if (hpBar != null)
-            {
-                hpBar.Set(maxHealth, transform);
-            }
-        }
-    }
+    //        if (hpBar != null)
+    //        {
+    //            hpBar.Set(maxHealth, transform);
+    //        }
+    //    }
+    //}
 
     //void SetLine()
     //{

@@ -23,6 +23,7 @@ public class MinimapCameraMover : MonoBehaviour
         //targetPos = target.position;
         //targetPos.y += height;
         targetPos = target.position;
+        targetPos.y += height;
         Quaternion targetRot = Quaternion.Euler(90f, target.eulerAngles.y, 0f);
         //targetRot = target.rotation;
         

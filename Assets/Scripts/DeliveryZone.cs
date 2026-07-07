@@ -9,7 +9,9 @@ public class DeliveryZone : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         Package box = other.GetComponent<Package>();
-        MarkDelivered(box);
+        if (box)
+            MarkDelivered(box);
+        else return;
     }
     void MarkDelivered(Package box) 
     {

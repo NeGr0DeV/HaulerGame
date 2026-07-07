@@ -13,8 +13,8 @@ NavMeshProjectSettings:
     cost: 2
   - name: Road
     cost: 1
-  - name: 
-    cost: 1
+  - name: Dont
+    cost: 999
   - name: 
     cost: 1
   - name: 
