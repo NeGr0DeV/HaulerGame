@@ -9,7 +9,7 @@ public class Package : MonoBehaviour
 
 
     private float health;
-    private float maxHealth = 10f;
+    private float maxHealth = 15f;
 
     private int penalty;
     private bool isDelivered = false;
@@ -27,6 +27,7 @@ public class Package : MonoBehaviour
     void TakeDamage(float dmg)
     {
         health -= dmg;
+        Debug.Log($"dmg taken: {dmg}, cur hp: {health}");
         if (health <= 0)
         {
             UpdateScore(penalty);
@@ -43,9 +44,8 @@ public class Package : MonoBehaviour
         if (isDelivered) return;
 
         float dmg = collision.relativeVelocity.magnitude;
-        Debug.Log($"dmg taken: {dmg}, cur hp: {health}");
-
-        TakeDamage(dmg);
+        if (dmg > 3)
+            TakeDamage(dmg);
         //UpdateHealth();
 
     }

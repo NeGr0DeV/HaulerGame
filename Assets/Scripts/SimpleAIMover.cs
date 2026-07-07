@@ -4,7 +4,7 @@ using UnityEngine.AI;
 public class SimpleAIMover : MonoBehaviour
 {
     public Transform[] waypoints;
-    public float waitTime = 1f;
+    public float waitTime = 0f;
     public bool randomPatrol = true;
 
     private NavMeshAgent agent;
@@ -12,6 +12,10 @@ public class SimpleAIMover : MonoBehaviour
     private float waitTimer = 0f;
     private bool waiting = false;
 
+    private void Awake()
+    {
+        waypoints = GetWaypoints();
+    }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -22,7 +26,23 @@ public class SimpleAIMover : MonoBehaviour
             agent.SetDestination(waypoints[0].position);
         }
     }
-
+    Transform[] GetWaypoints()
+    {
+        GameObject[] zones = GameObject.FindGameObjectsWithTag("DeliveryZone");
+        Debug.Log($"{zones.Length} zones found");
+        if (zones != null)
+        {
+            //if (waypoints == null)
+            //{
+                waypoints = new Transform[zones.Length];
+                for (int i = 0; i < zones.Length; i++)
+                {
+                    waypoints[i] = zones[i].transform;
+                }
+            //}
+        }
+        return waypoints;
+    }
     // Update is called once per frame
     void Update()
     {

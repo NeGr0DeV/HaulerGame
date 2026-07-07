@@ -16,6 +16,21 @@ public class MinimapCameraMover : MonoBehaviour
         SnapToTarget();
 
     }
+    private void Awake()
+    {
+        if (target == null)
+        {
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            if (player != null)
+            {
+                target = player.transform;
+            }
+            else
+            {
+                Debug.LogError("No Player tagged object found");
+            }
+        }
+    }
     private void LateUpdate()
     {
         if (target == null) return;

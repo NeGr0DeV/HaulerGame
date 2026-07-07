@@ -172,10 +172,12 @@ public class CarController : MonoBehaviour
         {
             float motorTorque = 0f;
             float currentMaxSpeed = _verticalInput > 0 ? _maxSpeedForvard : _maxSpeedRevers;
+            //float currentMaxSpeed = 9999999f;
 
             if (Mathf.Abs(_verticalInput) > 0.01f && _speed < currentMaxSpeed)
             {
                 float speedLimit = Mathf.Clamp01(1f - (_speed / currentMaxSpeed));
+                //float speedLimit = 9999999f;
                 motorTorque = _motorForce * _verticalInput * speedLimit;
             }
             else if (_speed > 0.5f && Mathf.Abs(_verticalInput) < 0.01f)
