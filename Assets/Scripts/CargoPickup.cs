@@ -57,59 +57,39 @@ public class CargoPickup : MonoBehaviour
         ShowPickupPrompt(false);
         ResetHighlight();
 
-        if (rb != null)
-        {
-            rb.isKinematic = true;
-        }
-
         StartCoroutine(MoveToCargoHold());
     }
 
     private System.Collections.IEnumerator MoveToCargoHold()
     {
-        // ===  –»“»„Ќќ ¬ј∆Ќџ… ѕќ–яƒќ  ===
+        if (cargoHoldPoint == null)
+        {
+            Debug.LogError("CargoHoldPoint не назначен!");
+            yield break;
+        }
+
         if (rb != null)
         {
             rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
-            rb.isKinematic = true;        // только после сброса скорости!
+            rb.isKinematic = true;
         }
 
-        Vector3 startPos = transform.position;
-        Quaternion startRot = transform.rotation;
-        Vector3 targetPos = cargoHoldPoint != null ? cargoHoldPoint.position : transform.position;
-        Quaternion targetRot = cargoHoldPoint != null ? cargoHoldPoint.rotation : transform.rotation;
+        Debug.Log("Ќачинаем мгновенное перемещение");
 
-        float duration = 1.3f;
-        float elapsed = 0f;
-
+        // ћгновенно ставим в точку
         transform.SetParent(null);
+        transform.position = cargoHoldPoint.position + Vector3.up * 0.5f;
+        transform.rotation = cargoHoldPoint.rotation;
 
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            float t = elapsed / duration;
+        yield return new WaitForSeconds(0.3f); // небольша€ пауза
 
-            float arc = Mathf.Sin(t * Mathf.PI) * 2.4f;
-
-            Vector3 currentPos = Vector3.Lerp(startPos, targetPos + Vector3.up * arc, t);
-            Quaternion currentRot = Quaternion.Lerp(startRot, targetRot, t * t);
-
-            transform.position = currentPos;
-            transform.rotation = currentRot;
-
-            yield return null;
-        }
-
-        // ‘инальна€ постановка в кузов
-        if (cargoHoldPoint != null)
-        {
-            transform.SetParent(cargoHoldPoint);
-            transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
-        }
-
-        Debug.Log("√руз успешно доставлен в кузов");
+        // ‘инально фиксируем
+        transform.SetParent(cargoHoldPoint);
+        transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.identity;
+        rb.isKinematic = false;
+        Debug.Log("√руз ѕ–»Ќ”ƒ»“≈Ћ№Ќќ поставлен в кузов");
     }
 
     private void PulseEffect()
