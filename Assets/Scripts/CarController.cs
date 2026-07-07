@@ -16,6 +16,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private float _engineBrakeForce;
     [SerializeField] private float _maxSpeedForvard;
     [SerializeField] private float _maxSpeedRevers;
+    private bool isLoaded = false;
 
     [SerializeField] private float _brakeInput;
     private float _verticalInput;
@@ -23,7 +24,8 @@ public class CarController : MonoBehaviour
 
     [SerializeField] public float _speed;
 
-    [SerializeField] private AnimationCurve _sterlingCurve;
+    [SerializeField] private AnimationCurve _emptySterlingCurve;
+    [SerializeField] private AnimationCurve _loadedSterlingCurve;
 
     private JointSpring[] initialSprings;
     private WheelFrictionCurve[] initialForwardFrictions;
@@ -54,8 +56,8 @@ public class CarController : MonoBehaviour
             c.forceAppPointDistance = -0.05f; // Точка приложения силы (чуть ниже)
 
             // === Радиус и масса ===
-            // c.radius = 0.45f;           // ~35-37 дюймовые колёса
-            // c.mass = 45f;
+            c.radius = 0.45f;           // ~35-37 дюймовые колёса
+            c.mass = 45f;
 
             // === Трение (Friction) ===
             // Forward Friction (разгон и торможение)
@@ -87,8 +89,7 @@ public class CarController : MonoBehaviour
         Move();
         Steer();
         Brake();
-        
-        
+        UpdateWheelSettings(isLoaded);
     }
 
     private void FixedUpdate()
@@ -130,16 +131,23 @@ public class CarController : MonoBehaviour
             wheel.UpdateMeshPosition();
         }
 
-        // Логика фар
-        if (_verticalInput < 0)
-            _lightsBackMove.SetActive(true);
-        else
-            _lightsBackMove.SetActive(false);
+        bool isReversingInput = _verticalInput < 0;
 
-        if (_verticalInput > 0)
-            _lights.SetActive(true);
+        if (isReversingInput && IsMovingForward)
+        {
+            _lightsBackMove.gameObject.SetActive(false);
+            _lights.gameObject.SetActive(true);
+        }
+        else if (isReversingInput && !IsMovingForward)
+        {
+            _lights.gameObject.SetActive(false);
+            _lightsBackMove.gameObject.SetActive(true);
+        }
         else
-            _lights.SetActive(false);
+        {
+            _lights.gameObject.SetActive(false);
+            _lightsBackMove.gameObject.SetActive(false);
+        }
     }
 
     public bool IsMovingForward
@@ -182,13 +190,50 @@ public class CarController : MonoBehaviour
 
     private void Steer()
     {
+        AnimationCurve _sterlingCurve;
+        if (isLoaded)
+        {
+            _sterlingCurve = _loadedSterlingCurve;
+        }
+        else _sterlingCurve = _emptySterlingCurve;
         float steeringAngle = _horizontalInput * _sterlingCurve.Evaluate(_speed);
-        steeringAngle = Mathf.Clamp(steeringAngle, -48f, 48f);
+        steeringAngle = Mathf.Clamp(steeringAngle, -42f, 42f);
         Debug.Log($"Horizontal: {_horizontalInput:F2}, Speed: {_speed:F1}, SteeringAngle: {steeringAngle:F1}");
         foreach (Wheel wheel in _wheels)
         {
             if (wheel.IsForwardWheels && wheel.WheelCollider != null)
                 wheel.WheelCollider.steerAngle = steeringAngle;
+        }
+    }
+
+    void UpdateWheelSettings(bool isLoaded)
+    {
+        float massFactor = isLoaded ? 1.65f : 1f; // коэффициент загрузки
+
+        foreach (Wheel wheel in _wheels)
+        {
+            var c = wheel.WheelCollider;
+
+            // Подвеска
+            JointSpring spring = c.suspensionSpring;
+            spring.spring = isLoaded ? 68000f : 42000f;
+            spring.damper = isLoaded ? 4200f : 2600f;
+            spring.targetPosition = 0.48f;
+            c.suspensionSpring = spring;
+
+            c.suspensionDistance = isLoaded ? 0.55f : 0.68f;
+            c.forceAppPointDistance = isLoaded ? -0.08f : -0.03f;
+
+            // Трение
+            WheelFrictionCurve fwd = c.forwardFriction;
+            fwd.extremumValue = isLoaded ? 1.25f : 1.1f;
+            fwd.asymptoteValue = isLoaded ? 0.8f : 0.75f;
+            c.forwardFriction = fwd;
+
+            WheelFrictionCurve side = c.sidewaysFriction;
+            side.extremumValue = isLoaded ? 1.05f : 1.15f;     // груженый = хуже боковое сцепление
+            side.asymptoteValue = isLoaded ? 0.75f : 0.85f;
+            c.sidewaysFriction = side;
         }
     }
 
