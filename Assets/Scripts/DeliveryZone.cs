@@ -4,7 +4,7 @@ using UnityEngine;
 public class DeliveryZone : MonoBehaviour
 {
     private int pts = 30; //change later
-    public Color zoneColor = Color.yellow;
+    //public Color zoneColor = Color.yellow;
 
     private void OnTriggerEnter(Collider other)
     {
