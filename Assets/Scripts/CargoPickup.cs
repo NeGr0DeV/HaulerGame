@@ -23,6 +23,7 @@ public class CargoPickup : MonoBehaviour
     private bool isHold = false;
     private float fallCheckTimer = 0f;
     private static Transform currentCargoInTruck = null;
+    public float massCargo = 0f;
 
     private void Awake()
     {
@@ -114,6 +115,11 @@ public class CargoPickup : MonoBehaviour
 
         // ћгновенно ставим в точку
         transform.SetParent(null);
+        if (truckSystem != null)
+        {
+            truckSystem.currentCargo = transform;  // важно!
+            truckSystem.massCargo = rb.mass; // если TruckCargoSystem имеет это поле
+        }
         transform.position = cargoHoldPoint.position + Vector3.up * 0.5f;
         transform.rotation = cargoHoldPoint.rotation;
 

@@ -5,8 +5,10 @@ public class TruckCargoSystem : MonoBehaviour
     [Header("Настройки")]
     [SerializeField] private Transform cargoHoldPoint;
     [SerializeField] private int maxCargoCount = 1;
+    private CargoPickup cargoPickup;
+    public float massCargo = 0f;
 
-    private Transform currentCargo = null;
+    public Transform currentCargo = null;
 
     public bool CanPickupCargo() => currentCargo == null;
 
@@ -15,6 +17,7 @@ public class TruckCargoSystem : MonoBehaviour
         if (currentCargo != null) return;
 
         currentCargo = cargo;
+        massCargo = cargoPickup.massCargo;
         Debug.Log("Груз успешно загружен в кузов");
     }
 
