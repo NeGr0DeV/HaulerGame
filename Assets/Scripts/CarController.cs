@@ -80,7 +80,6 @@ public class CarController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        Debug.Log($"Wheels count: {_wheels.Length}");
     }
 
     private void Update()
@@ -198,7 +197,6 @@ public class CarController : MonoBehaviour
         else _sterlingCurve = _emptySterlingCurve;
         float steeringAngle = _horizontalInput * _sterlingCurve.Evaluate(_speed);
         steeringAngle = Mathf.Clamp(steeringAngle, -42f, 42f);
-        Debug.Log($"Horizontal: {_horizontalInput:F2}, Speed: {_speed:F1}, SteeringAngle: {steeringAngle:F1}");
         foreach (Wheel wheel in _wheels)
         {
             if (wheel.IsForwardWheels && wheel.WheelCollider != null)
