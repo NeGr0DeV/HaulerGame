@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class CargoPickup : MonoBehaviour
 {
@@ -9,6 +11,7 @@ public class CargoPickup : MonoBehaviour
     [SerializeField] private float fallDetectionHeight = 0.1f;
     [SerializeField] private float fallCheckInterval = 0.5f;
     private TruckCargoSystem truckSystem;
+    [SerializeField] private TMP_Text HelpText;
 
     [Header("Ограничение груза")]
     [SerializeField] private bool allowOnlyOneCargo = true;
@@ -62,6 +65,7 @@ public class CargoPickup : MonoBehaviour
             if (truckSystem == null)
                 truckSystem = other.GetComponentInParent<TruckCargoSystem>();
         }
+
     }
 
     private void OnTriggerExit(Collider other)
@@ -71,6 +75,7 @@ public class CargoPickup : MonoBehaviour
             isPlayerNearby = false;
             ShowPickupPrompt(false);
             ResetHighlight();
+            HelpText.gameObject.SetActive(false);
         }
     }
 
@@ -111,8 +116,6 @@ public class CargoPickup : MonoBehaviour
             rb.isKinematic = true;
         }
 
-        Debug.Log("Начинаем мгновенное перемещение");
-
         // Мгновенно ставим в точку
         transform.SetParent(null);
         if (truckSystem != null)
@@ -123,15 +126,16 @@ public class CargoPickup : MonoBehaviour
         transform.position = cargoHoldPoint.position + Vector3.up * 0.5f;
         transform.rotation = cargoHoldPoint.rotation;
 
-        yield return new WaitForSeconds(0.3f); // небольшая пауза
+        yield return new WaitForSeconds(0.3f);
         // Финально фиксируем
         transform.SetParent(cargoHoldPoint);
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
         rb.isKinematic = false;
         isHold = true;
+        yield return new WaitForSeconds(0.3f);
         currentCargoInTruck = transform;
-        Debug.Log("Груз поставлен в кузов");
+        HelpText.gameObject.SetActive(false);
     }
 
     private void CheckIfFallen()
@@ -143,7 +147,7 @@ public class CargoPickup : MonoBehaviour
         Vector3 holdPos = cargoHoldPoint.position;
 
         // Размер зоны кузова (подбери под свой кузов)
-        float maxDistanceX = 3.3f;   // длина кузова / 2
+        float maxDistanceX = 3.5f;   // длина кузова / 2
         float maxDistanceZ = 1.3f;   // ширина кузова / 2
         float maxDropY = 0.5f;       // максимальное падение по высоте
 
@@ -161,11 +165,8 @@ public class CargoPickup : MonoBehaviour
     }
     private void OnCargoFallen()
     {
-        Debug.LogWarning("Груз вывалился из кузова!");
-
         isHold = false;
         currentCargoInTruck = null;
-        // Включаем физику обратно
         if (rb != null)
         {
             rb.detectCollisions = true;
@@ -174,7 +175,15 @@ public class CargoPickup : MonoBehaviour
         // Отсоединяем от кузова
         transform.SetParent(null);
 
-        // Можно добавить эффект/звук/штраф
+        HelpText.gameObject.SetActive(true);
+        HelpText.text = "The cargo fell out of the truck bed!";
+        StartCoroutine(HideHelpTextAfterDelay(10f));
+    }
+
+    private System.Collections.IEnumerator HideHelpTextAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        HelpText.gameObject.SetActive(false);
     }
 
     private void PulseEffect()
@@ -200,6 +209,7 @@ public class CargoPickup : MonoBehaviour
     {
         if (show)
             Debug.Log("<color=yellow>Нажмите [E] чтобы подобрать груз</color>");
-        // Здесь позже подключишь UI
+        HelpText.text = "Press E to take a cargo";
+        HelpText.gameObject.SetActive(true);
     }
 }

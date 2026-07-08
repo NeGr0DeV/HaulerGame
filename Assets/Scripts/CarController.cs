@@ -18,6 +18,7 @@ public class CarController : MonoBehaviour
 
     private Rigidbody _rb;
     [SerializeField] private int _motorForce;
+    [SerializeField] private AnimationCurve _powerCurve = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
     [SerializeField] private int _brakeForce;
     [SerializeField] private float _engineBrakeForce;
     [SerializeField] private float _maxSpeedForvard;
@@ -169,6 +170,9 @@ public class CarController : MonoBehaviour
     {
         _speed = _rb.linearVelocity.magnitude;
 
+        // === УЧИТЫВАЕМ ЗАГРУЗКУ ===
+        float effectiveMotorForce = _motorForce * _powerCurve.Evaluate(loadFactor);
+
         foreach (Wheel wheel in _wheels)
         {
             float motorTorque = 0f;
@@ -177,11 +181,11 @@ public class CarController : MonoBehaviour
             if (Mathf.Abs(_verticalInput) > 0.01f && _speed < currentMaxSpeed)
             {
                 float speedLimit = Mathf.Clamp01(1f - (_speed / currentMaxSpeed));
-                motorTorque = _motorForce * _verticalInput * speedLimit;
+                motorTorque = effectiveMotorForce * _verticalInput * speedLimit;
             }
             else if (_speed > 0.5f && Mathf.Abs(_verticalInput) < 0.01f)
             {
-                // Двигательное торможение (engine brake)
+                // Двигательное торможение
                 motorTorque = -Mathf.Sign(Vector3.Dot(_rb.linearVelocity, transform.forward)) * _engineBrakeForce;
                 if (Vector3.Dot(transform.forward * motorTorque, _rb.linearVelocity.normalized) > 0)
                     motorTorque = 0;
