@@ -129,8 +129,6 @@ public class CargoPickup : MonoBehaviour
         yield return new WaitForSeconds(0.3f);
         // Финально фиксируем
         transform.SetParent(cargoHoldPoint);
-        transform.localPosition = Vector3.zero;
-        transform.localRotation = Quaternion.identity;
         rb.isKinematic = false;
         isHold = true;
         yield return new WaitForSeconds(0.3f);
