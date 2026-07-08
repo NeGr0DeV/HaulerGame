@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class ZoneSpawner : MonoBehaviour
@@ -22,6 +23,18 @@ public class ZoneSpawner : MonoBehaviour
         {
             zone.SetActive(false);
         }
+    }
+    public void WaitAndDeactivateAll()
+    {
+        DelayDeactivateAll();
+        return;
+    }
+    public IEnumerator DelayDeactivateAll()
+    {
+        Debug.Log("3 sec wait");
+        yield return new WaitForSeconds(0.5f);
+        Debug.Log("Deactivating zones");
+        DeactivateAll();
     }
     public void ActivateRandom()
     {

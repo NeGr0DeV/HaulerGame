@@ -65,7 +65,9 @@ public class Cargo : MonoBehaviour
         ZoneSpawner zoneSpawner = GameObject.FindFirstObjectByType<ZoneSpawner>();
         if (zoneSpawner != null)
         {
-            onCargoDelivered.AddListener(zoneSpawner.DeactivateAll);
+            //onCargoDelivered.AddListener(zoneSpawner.DeactivateAll);
+            Debug.Log("Delayed deactivation started");
+            onCargoDelivered.AddListener(zoneSpawner.WaitAndDeactivateAll);
         }
         MinimapMarkers minimapMarkers = GameObject.FindFirstObjectByType<MinimapMarkers>();
         if (minimapMarkers != null)
