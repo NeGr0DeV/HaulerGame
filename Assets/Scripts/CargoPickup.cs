@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class CargoPickup : MonoBehaviour
 {
@@ -25,13 +26,66 @@ public class CargoPickup : MonoBehaviour
     private static Transform currentCargoInTruck = null;
     public float massCargo = 0f;
 
+    public UnityEvent onCargoPickedUp; //events (for ZoneSpawner)
+    //public UnityEvent onCargoFallen; //idk, maybe will be used later
+    public bool isPickedUp;
+    //public bool isFallen;
+    public bool IsPickedUp
+    {
+        get => isPickedUp;
+        set
+        {
+            if (isPickedUp != value)
+            {
+                isPickedUp = value;
+                if (isPickedUp)
+                {
+                    onCargoPickedUp?.Invoke();
+                    Debug.Log($"Package picked up, event fired");
+                }
+            }
+        }
+    }
+    //public bool IsFallen
+    //{
+    //    get => IsFallen;
+    //    set
+    //    {
+    //        if (IsFallen != value)
+    //        {
+    //            IsFallen = value;
+    //            if (IsFallen)
+    //            {
+    //                onCargoFallen?.Invoke();
+    //                Debug.Log($"Package fallen, event fired");
+    //            }
+    //        }
+    //    }
+    //}
+
+
     private void Awake()
     {
         renderers = GetComponentsInChildren<Renderer>();
         rb = GetComponentInParent<Rigidbody>(); // находим Rigidbody на родителе
+
+        //find player and add cargoHoldPoint
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         cargoHoldPoint = player.GetComponent<TruckCargoSystem>().cargoHoldPoint;
-    }
+
+        //adding event listeners
+        TaskText taskText = GameObject.FindFirstObjectByType<TaskText>();
+        if (taskText != null)
+        {
+            onCargoPickedUp.AddListener(taskText.DeliverMessage);
+        }
+        ZoneSpawner zoneSpawner = GameObject.FindFirstObjectByType<ZoneSpawner>();
+        if (zoneSpawner != null)
+        {
+            onCargoPickedUp.AddListener(zoneSpawner.ActivateRandom);
+        }
+    
+}
 
     private void Update()
     {
@@ -96,6 +150,7 @@ public class CargoPickup : MonoBehaviour
         }
         PickupCargo();
         truckSystem.LoadCargo(transform);
+        IsPickedUp = true;
     }
 
     private System.Collections.IEnumerator MoveToCargoHold()
@@ -200,8 +255,9 @@ public class CargoPickup : MonoBehaviour
 
     private void ShowPickupPrompt(bool show)
     {
-        if (show)
-            Debug.Log("<color=yellow>Нажмите [E] чтобы подобрать груз</color>");
+        //if (show)
+            //Debug.Log("<color=yellow>Нажмите [E] чтобы подобрать груз</color>");
         // Здесь позже подключишь UI
+        // OK
     }
 }

@@ -8,7 +8,6 @@ public class TruckCargoSystem : MonoBehaviour
     [SerializeField] private int maxCargoCount = 1;
     private CargoPickup cargoPickup;
     public float massCargo = 0f;
-    public TaskText taskText; // !!!!
 
     public Transform currentCargo = null;
 
@@ -21,8 +20,6 @@ public class TruckCargoSystem : MonoBehaviour
         currentCargo = cargo;
         massCargo = cargoPickup.massCargo;
        
-        taskText.isCargoPicked = true; //
-        taskText.UpdateTaskText();     //
         Debug.Log("Груз успешно загружен в кузов");
     }
 
@@ -33,8 +30,6 @@ public class TruckCargoSystem : MonoBehaviour
         currentCargo.SetParent(null);
 
         currentCargo = null;
-        taskText.isCargoPicked = false;  //
-        taskText.UpdateTaskText();       //
         Debug.Log("Груз выгружен");
     }
 

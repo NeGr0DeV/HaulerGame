@@ -15,22 +15,19 @@ public class TaskText : MonoBehaviour
     }
     IEnumerator HideAfterDelay()
     {
-        taskText.gameObject.SetActive(true);
+        Debug.Log("HAD called");
         yield return new WaitForSeconds(3);
-        taskText.gameObject.SetActive(false);
+        taskText.text = "";
     }
-    public void UpdateTaskText()
+    public void PickupMessage()
     {
-        if (isCargoPicked)
-        {
-            taskText.text = "Deliver a cargo to a delivery zone!";
-            StartCoroutine(HideAfterDelay());
-        }
-        else
-        {
-            taskText.text = "You need to pick up a cargo!";
-            StartCoroutine(HideAfterDelay());
-        }
+        taskText.text = "You need to pick up a cargo!";
+        StartCoroutine(HideAfterDelay());
+    }
+    public void DeliverMessage()
+    {
+        taskText.text = "Deliver a cargo to a delivery zone";
+        StartCoroutine(HideAfterDelay());
     }
     // Update is called once per frame
     void Update()

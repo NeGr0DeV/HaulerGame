@@ -8,15 +8,15 @@ public class DeliveryZone : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Package box = other.GetComponent<Package>();
+        Cargo box = other.GetComponent<Cargo>();
         if (box)
         {
             MarkDelivered(box);
-            Destroy(other.gameObject);
+            //Destroy(other.gameObject);
         }
         else return;
     }
-    void MarkDelivered(Package box) 
+    void MarkDelivered(Cargo box) 
     {
         if (SimpleScore.Instance != null)
         {
@@ -26,6 +26,7 @@ public class DeliveryZone : MonoBehaviour
         {
             Timer.Instance.AddTime();
         }
+        box.MarkDelivered();
     }
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
