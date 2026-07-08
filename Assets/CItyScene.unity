@@ -524,7 +524,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 82.52295, y: 0, z: 0, w: 3.8790894}
+  m_margin: {x: 82.52295, y: 0, z: 0, w: -74.01947}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -551,7 +551,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SimpleScore
   scoreText: {fileID: 169282423}
-  score: 0
 --- !u!1001 &216456106
 PrefabInstance:
   m_ObjectHideFlags: 0

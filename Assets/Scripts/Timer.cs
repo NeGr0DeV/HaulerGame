@@ -25,11 +25,11 @@ public class Timer : MonoBehaviour
     }
     public void AddTime(int s)
     {
-        time += s;
+        time += s; //maybe not needed
     }
     public void AddTime()
     {
-        time += 30;
+        time += 30; //maybe not needed
     }
     void UpdateTimeDisplay()
     {
@@ -41,7 +41,8 @@ public class Timer : MonoBehaviour
         }
         else
         {
-            timeText.text = "Time's up!";
+            TaskText taskText = GameObject.FindFirstObjectByType<TaskText>();
+            taskText.TimesUpMessage();
         }
     }
 

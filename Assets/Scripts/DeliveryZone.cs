@@ -21,6 +21,7 @@ public class DeliveryZone : MonoBehaviour
         if (SimpleScore.Instance != null)
         {
             SimpleScore.Instance.UpdateScore(pts);
+            SimpleScore.Instance.UpdateCargosDelivered();
         }
         if (Timer.Instance != null)
         {

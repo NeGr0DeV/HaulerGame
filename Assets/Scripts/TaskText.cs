@@ -29,6 +29,11 @@ public class TaskText : MonoBehaviour
         taskText.text = "Deliver a cargo to a delivery zone";
         StartCoroutine(HideAfterDelay());
     }
+    public void TimesUpMessage()
+    {
+        taskText.text = "Time's up!";
+        StartCoroutine(HideAfterDelay());
+    }
     // Update is called once per frame
     void Update()
     {

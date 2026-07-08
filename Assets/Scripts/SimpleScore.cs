@@ -6,8 +6,10 @@ public class SimpleScore : MonoBehaviour
     public TextMeshProUGUI scoreText;
     public static SimpleScore Instance;
 
-    public int score;
+    private int score;
     private int highScore;
+    private int cargoDelivered;
+
 
     private void Awake()
     {
@@ -24,12 +26,15 @@ public class SimpleScore : MonoBehaviour
         Debug.Log($"cur score: {score}");
         UpdateScoreDisplay();
     }
-
+    public void UpdateCargosDelivered()
+    {
+        cargoDelivered++;
+    }
     void UpdateScoreDisplay()
     {
         if (scoreText != null)
         {
-            scoreText.text = $"Score: {score}\nHighscore: {highScore}";
+            scoreText.text = $"Score: {score}\nHighscore: {highScore}\nCargo delivered: {cargoDelivered}";
         }
     }
 
@@ -39,6 +44,7 @@ public class SimpleScore : MonoBehaviour
         if (Instance == null)
             Instance = new SimpleScore();
         score = 0;
+        cargoDelivered = 0;
         highScore = score;
 
         UpdateScoreDisplay();
