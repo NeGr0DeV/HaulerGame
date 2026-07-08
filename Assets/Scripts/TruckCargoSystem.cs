@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using UnityEngine;
 
 public class TruckCargoSystem : MonoBehaviour
@@ -17,7 +18,8 @@ public class TruckCargoSystem : MonoBehaviour
         if (currentCargo != null) return;
 
         currentCargo = cargo;
-        massCargo = cargoPickup.massCargo;
+        CargoPickup pickup = cargo.GetComponent<CargoPickup>();
+        if (pickup != null) { massCargo = pickup.massCargo; }
         Debug.Log("Груз успешно загружен в кузов");
     }
 

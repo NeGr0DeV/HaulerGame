@@ -18,6 +18,7 @@ public class CarController : MonoBehaviour
     [SerializeField] private int _motorForce = 2600;
     [SerializeField] private AnimationCurve _powerCurve = AnimationCurve.EaseInOut(0, 1, 1, 0.35f);
     [SerializeField] private int _brakeForce = 4200;
+    private float _currentBrakeForce;
     [SerializeField] private float _engineBrakeForce = 950f;
 
     [SerializeField] private float _maxSpeedForvard = 48f;
@@ -102,16 +103,39 @@ public class CarController : MonoBehaviour
         CheckInput();
         Move();
         Steer();
-        CheckLoad();
     }
 
     private void FixedUpdate()
     {
-        UpdateCenterOfMass();
+        CalculateDynamicCenterOfMass();
         UpdateWheelSettingsOptimized();
-        ApplyWeightTransfer();
         ApplyMotorTorque();
+        _currentBrakeForce =Mathf.MoveTowards(_currentBrakeForce, _brakeForce * _brakeInput, Time.fixedDeltaTime * 8000f);
         ApplyBrakes();
+    }
+
+    private void CalculateDynamicCenterOfMass()
+    {
+        if (truckCargoSystem == null || !truckCargoSystem.HasCargo())
+        {
+            _rb.centerOfMass = baseCenterOfMass;
+            loadFactor = 0f;
+            return;
+        }
+        Transform cargoTransform = truckCargoSystem.currentCargo;
+        Rigidbody cargoRb = cargoTransform.GetComponent<Rigidbody>();
+        if (cargoRb != null)
+        {
+            float currentCargoMass = cargoRb.mass;
+            Vector3 localCargoPos = transform.InverseTransformPoint(cargoRb.worldCenterOfMass);
+            float totalMass = _rb.mass + currentCargoMass;
+            Vector3 dynamicCom = ((baseCenterOfMass * _rb.mass) + (localCargoPos * currentCargoMass)) / totalMass;
+
+            dynamicCom.y = Mathf.Clamp(dynamicCom.y, baseCenterOfMass.y - 0.1f, baseCenterOfMass.y + 0.3f);
+            _rb.centerOfMass = dynamicCom;
+            float maxCargoMass = 1100f;
+            loadFactor = Mathf.Clamp01(currentCargoMass / maxCargoMass);
+        }
     }
 
     private void CheckInput()
@@ -126,60 +150,6 @@ public class CarController : MonoBehaviour
             _brakeInput = Mathf.Abs(_verticalInput);
         else
             _brakeInput = 0;
-    }
-
-    private void CheckLoad()
-    {
-        if (truckCargoSystem.currentCargo != null)
-        {
-            Rigidbody cargoRb = truckCargoSystem.currentCargo.GetComponent<Rigidbody>();
-            if (cargoRb != null)
-                massCargo = cargoRb.mass;
-            else
-            {
-                CargoPickup cargoScript = truckCargoSystem.currentCargo.GetComponent<CargoPickup>();
-                if (cargoScript != null)
-                    massCargo = cargoScript.massCargo;
-            }
-        }
-        else
-            massCargo = 0f;
-
-        float maxCargoMass = 1100f;
-        loadFactor = Mathf.Clamp01(massCargo / maxCargoMass);
-    }
-
-    private void UpdateCenterOfMass()
-    {
-        if (loadFactor < 0.05f)
-        {
-            _rb.centerOfMass = baseCenterOfMass;
-            return;
-        }
-
-        Vector3 offset = _loadedCoMOffset * loadFactor;
-        _rb.centerOfMass = baseCenterOfMass + offset;
-    }
-
-    private void ApplyWeightTransfer()
-    {
-        if (_rb.linearVelocity.magnitude < 1f) return;
-
-        float forwardAccel = Vector3.Dot(_rb.linearVelocity, transform.forward);
-        float lateral = _rb.angularVelocity.y;
-
-        float longTransfer = forwardAccel * 0.032f;   // продольный перенос
-        float latTransfer = lateral * 1.75f;          // поперечный
-
-        foreach (Wheel wheel in _wheels)
-        {
-            var c = wheel.WheelCollider;
-            float transfer = wheel.IsForwardWheels ?
-                (longTransfer * 0.65f + latTransfer * 0.7f) :
-                (longTransfer * -0.45f + latTransfer * -0.7f);
-
-            c.forceAppPointDistance = -0.04f + transfer;
-        }
     }
 
     private void ApplyMotorTorque()
@@ -241,27 +211,30 @@ public class CarController : MonoBehaviour
 
         foreach (Wheel wheel in _wheels)
         {
-            var c = wheel.WheelCollider;
+            if (!wheel.IsForwardWheels)
+            {
+                var c = wheel.WheelCollider;
 
-            JointSpring spring = c.suspensionSpring;
-            spring.spring = Mathf.Lerp(36000f, 65000f, t);     // мягче в пустом состоянии
-            spring.damper = Mathf.Lerp(2200f, 3800f, t);
-            spring.targetPosition = 0.48f;
-            c.suspensionSpring = spring;
+                JointSpring spring = c.suspensionSpring;
+                spring.spring = Mathf.Lerp(36000f, 65000f, t);     // мягче в пустом состоянии
+                spring.damper = Mathf.Lerp(2200f, 3800f, t);
+                spring.targetPosition = 0.48f;
+                c.suspensionSpring = spring;
 
-            c.suspensionDistance = Mathf.Lerp(0.70f, 0.56f, t);
-            c.forceAppPointDistance = Mathf.Lerp(-0.03f, -0.07f, t);
+                c.suspensionDistance = Mathf.Lerp(0.70f, 0.56f, t);
+                c.forceAppPointDistance = Mathf.Lerp(-0.03f, -0.07f, t);
 
-            // Friction
-            WheelFrictionCurve fwd = c.forwardFriction;
-            fwd.extremumValue = Mathf.Lerp(1.08f, 1.22f, t);
-            fwd.asymptoteValue = Mathf.Lerp(0.76f, 0.81f, t);
-            c.forwardFriction = fwd;
+                // Friction
+                WheelFrictionCurve fwd = c.forwardFriction;
+                fwd.extremumValue = Mathf.Lerp(1.08f, 1.22f, t);
+                fwd.asymptoteValue = Mathf.Lerp(0.76f, 0.81f, t);
+                c.forwardFriction = fwd;
 
-            WheelFrictionCurve side = c.sidewaysFriction;
-            side.extremumValue = Mathf.Lerp(1.12f, 1.02f, t);
-            side.asymptoteValue = Mathf.Lerp(0.84f, 0.73f, t);
-            c.sidewaysFriction = side;
+                WheelFrictionCurve side = c.sidewaysFriction;
+                side.extremumValue = Mathf.Lerp(1.12f, 1.02f, t);
+                side.asymptoteValue = Mathf.Lerp(0.84f, 0.73f, t);
+                c.sidewaysFriction = side;
+            }
         }
     }
 
@@ -285,6 +258,24 @@ public class CarController : MonoBehaviour
         {
             _lights.SetActive(false);
             _lightsBackMove.SetActive(false);
+        }
+    }
+
+    private void OnDrawGizmos()
+    {
+        // Получаем Rigidbody, если он еще не назначен (нужно для работы в редакторе)
+        Rigidbody debugRb = _rb;
+        if (debugRb == null)
+            debugRb = GetComponent<Rigidbody>();
+
+        if (debugRb != null)
+        {
+            // Переводим локальный центр масс в мировые координаты
+            Vector3 worldCoM = transform.TransformPoint(debugRb.centerOfMass);
+
+            // Рисуем красную сферу размером 0.3 метра
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(worldCoM, 0.3f);
         }
     }
 }
