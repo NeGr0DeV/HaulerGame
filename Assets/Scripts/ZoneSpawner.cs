@@ -3,6 +3,7 @@ using UnityEngine;
 public class ZoneSpawner : MonoBehaviour
 {
     private GameObject[] deliveryZones;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
