@@ -65,6 +65,11 @@ public class Cargo : MonoBehaviour
         {
             onCargoDelivered.AddListener(zoneSpawner.DeactivateAll);
         }
+        MinimapMarkers minimapMarkers = GameObject.FindFirstObjectByType<MinimapMarkers>();
+        if (minimapMarkers != null)
+        {
+            onCargoDelivered.AddListener(minimapMarkers.DestroyMarkers);
+        }
     }
     void Start()
     {
