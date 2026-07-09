@@ -4,17 +4,46 @@ using UnityEngine;
 public class DeliveryZone : MonoBehaviour
 {
     private int pts = 30; //change later
-    //public Color zoneColor = Color.yellow;
-
+    private LoadedCargoHandler loadedCargoHandler;
+    private ZoneSpawner zoneSpawner;
+    private int numCargos;
+    private int numDelivered;
     private void OnTriggerEnter(Collider other)
     {
+        if (other.gameObject.CompareTag("Player"))
+        {
+            
+            if (loadedCargoHandler)
+            {
+                numCargos = loadedCargoHandler.GetNumCargos();
+            }
+            Debug.Log($"Player entered trigger, numCargos: {numCargos}");
+        }
         Cargo box = other.GetComponent<Cargo>();
         if (box)
         {
             MarkDelivered(box);
+            numDelivered++;
+            Debug.Log($"Cargo entered trigger, numDelivered: {numDelivered}");
             //Destroy(other.gameObject);
         }
-        else return;
+        //Debug.Log($"numCargos: {numCargos}, numDelivered: {numDelivered}");
+        if (numCargos != 0 && numDelivered == numCargos)
+        {
+            DeactivateZone();
+            if (!gameObject.activeInHierarchy)
+                loadedCargoHandler.ClearAllCargo();
+        }
+        
+    }
+    public void DeactivateZone()
+    {
+        if (zoneSpawner)
+        {
+            zoneSpawner.DeactivateZone(gameObject);
+            numCargos = 0;
+            numDelivered = 0;
+        }
     }
     void MarkDelivered(Cargo box) 
     {
@@ -31,7 +60,10 @@ public class DeliveryZone : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        numCargos = 0;
+        numDelivered = 0;
+        loadedCargoHandler = GameObject.FindFirstObjectByType<LoadedCargoHandler>();
+        zoneSpawner = GameObject.FindFirstObjectByType<ZoneSpawner>();
     }
 
     // Update is called once per frame

@@ -23,7 +23,7 @@ public class Score : MonoBehaviour
         score += sc;
         if (score > highScore)
             highScore = score;
-        Debug.Log($"cur score: {score}");
+        //Debug.Log($"cur score: {score}");
         UpdateScoreDisplay();
     }
     public void UpdateCargosDelivered()

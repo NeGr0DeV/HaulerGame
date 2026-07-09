@@ -56,6 +56,21 @@ public class TruckCargoSystem : MonoBehaviour
         if (pickup != null) totalMassCargo -= pickup.massCargo;
     }
 
+    public void ClearAllCargo()
+    {
+        foreach (Transform cargo in loadedCargos)
+        {
+            if (cargo != null)
+            {
+                cargo.SetParent(null);
+                if (allocatedTargets.ContainsKey(cargo)) allocatedTargets.Remove(cargo);
+                totalMassCargo = 0;
+            }
+            else { totalMassCargo = 0; }
+        }
+        loadedCargos.Clear();
+    }
+
     public Vector3 GetDynamicCargoPosition(Transform newCargo)
     {
         Vector3 extents = GetCargoExtents(newCargo);

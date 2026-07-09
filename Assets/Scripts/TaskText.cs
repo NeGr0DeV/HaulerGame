@@ -15,7 +15,7 @@ public class TaskText : MonoBehaviour
     }
     IEnumerator HideAfterDelay()
     {
-        Debug.Log("HAD called");
+        Debug.Log("TaskText HideAfterDelay called");
         yield return new WaitForSeconds(3);
         taskText.text = "";
     }

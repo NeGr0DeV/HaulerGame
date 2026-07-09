@@ -47,7 +47,7 @@ public class Cargo : MonoBehaviour
                 if (isDelivered)
                 {
                     onCargoDelivered?.Invoke();
-                    Debug.Log($"Package delivered, event fired");
+                    Debug.Log($"Cargo delivered, events fired");
                 }
             }
         }
@@ -62,13 +62,18 @@ public class Cargo : MonoBehaviour
         {
             onCargoDelivered.AddListener(taskText.PickupMessage);
         }
-        ZoneSpawner zoneSpawner = GameObject.FindFirstObjectByType<ZoneSpawner>();
-        if (zoneSpawner != null)
-        {
-            //onCargoDelivered.AddListener(zoneSpawner.DeactivateAll);
-            Debug.Log("Delayed deactivation started");
-            onCargoDelivered.AddListener(zoneSpawner.WaitAndDeactivateAll);
-        }
+        //ZoneSpawner zoneSpawner = GameObject.FindFirstObjectByType<ZoneSpawner>();
+        //if (zoneSpawner != null)
+        //{
+        //    //onCargoDelivered.AddListener(zoneSpawner.DeactivateAll);
+        //    Debug.Log("Delayed deactivation started");
+        //    onCargoDelivered.AddListener(zoneSpawner.DeactivateIfDeliveredAll);
+        //}
+        //LoadedCargoHandler loadedCargoHandler = GameObject.FindFirstObjectByType<LoadedCargoHandler>();
+        //if (loadedCargoHandler != null)
+        //{
+        //    onCargoDelivered.AddListener(loadedCargoHandler.DeactivateZones);
+        //}
         MinimapMarkers minimapMarkers = GameObject.FindFirstObjectByType<MinimapMarkers>();
         if (minimapMarkers != null)
         {
@@ -110,13 +115,13 @@ public class Cargo : MonoBehaviour
     void Die()
     {
         Destroy(gameObject);
-        Debug.Log($"cargo {gameObject} destroyed");
+        //Debug.Log($"cargo {gameObject} destroyed");
     }
     public void MarkDelivered()
     {
         IsDelivered = true;
         Die();
-        Debug.Log("cargo delivered");
+        //Debug.Log("cargo delivered");
     }
     private void OnDestroy()
     {

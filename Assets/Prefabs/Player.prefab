@@ -341,8 +341,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1566591929840627270}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -203.16, y: 0.5971298, z: 359.66614}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -297.31, y: 1.15, z: 168.61}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -458,7 +458,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 2.4680316, y: 1.6469648, z: 3.2}
-  m_Center: {x: 0, y: 1.1727061, z: 1.29}
+  m_Center: {x: 0, y: 1.21906, z: 1.29}
 --- !u!54 &849461212563728445
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -515,12 +515,36 @@ MonoBehaviour:
   _lights: {fileID: 6465764808240418768}
   _lightsBackMove: {fileID: 6547168021531010884}
   _emptyCenterOfMass: {x: 0, y: -0.5, z: 0}
-  _loadedCenterOfMassOffset: {x: 0, y: -0.8, z: -0.6}
+  _loadedCoMOffset: {x: 0, y: 0.35, z: -0.75}
   _motorForce: 2200
+  _powerCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0.35
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   _brakeForce: 30000
   _engineBrakeForce: 1400
-  _maxSpeedForvard: 30
-  _maxSpeedRevers: 5
+  _maxSpeedForvard: 60
+  _maxSpeedRevers: 10
   _brakeInput: 0
   _speed: 0
   _emptySterlingCurve:
@@ -701,9 +725,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TruckCargoSystem
   cargoHoldPoint: {fileID: 3707215201184283504}
-  maxCargoCount: 1
-  massCargo: 0
-  currentCargo: {fileID: 0}
+  maxCargoCount: 10
+  bedWidth: 2.4
+  bedLength: 3.6
+  maxHeight: 2.5
+  scanStep: 0.1
+  totalMassCargo: 0
+  loadedCargos: []
 --- !u!1 &1680120631317064329
 GameObject:
   m_ObjectHideFlags: 0
